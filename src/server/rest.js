@@ -1,4 +1,5 @@
 import express from "express";
+import {connection} from "./connection.js";
 
 const port = 4000;
 

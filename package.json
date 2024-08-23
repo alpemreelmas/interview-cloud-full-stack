@@ -22,8 +22,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "prepare": "cat src/server/sql/schema.sql src/server/sql/seed.sql src/server/sql/custom.sql | sqlite3 database.db",
-    "serve": "npm run prepare && nodemon src/server"
+    "prepare": "type src\\server\\sql\\schema.sql src\\server\\sql\\seed.sql src\\server\\sql\\custom.sql > src\\server\\sql\\all.sql && sqlite3 database.db < all.sql",    "serve": "npm run prepare && nodemon src/server"
   },
   "eslintConfig": {
     "extends": [
