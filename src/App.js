@@ -9,7 +9,7 @@ import {DataTable} from './components/DataTable'
 import {Pagination} from './components/Pagination'
 /*import { gql, useQuery } from '@apollo/client';*/
 import {fetchToApi} from "./libs/fetch.js";
-import {displayColumnToQueryColumn} from "./libs/constants.js";
+import {formatDate, isToday, sortByColumnId, sortByDate, sortByFirmwareVersion} from "./libs/utils.js";
 
 /*const data = [
   { iconExample: true }, {}, {}, {}, {}, {}, {}, {}, {}, {},
@@ -29,52 +29,58 @@ const UnauthorizedUserIcon = () => {
     const icon = <Icon name="warning sign" color="yellow"/>;
     return <Popup content="Not Authorized" trigger={icon}/>;
 }
-
-const columns = [
-    {
-        id: 'status',
-        render: (row) => row.iconExample && <UpdateInProgressIcon/>,
-        collapsing: true
-    },
-    {
-        id: 'user',
-        header: 'User',
-        render: (row) => (
-            <>
-                {row.email}
-                &nbsp;
-                {!row.is_admin && <UnauthorizedUserIcon/>}
-            </>
-        ),
-    },
-    {
-        id: 'name',
-        header: 'Name',
-        render: (row) => (<>{row.device_name}</>),
-    },
-    {
-        id: 'version',
-        header: 'Firmware',
-        render: (row) => '1.0.0',
-    },
-    {
-        id: 'updated',
-        header: 'Last Updated',
-        render: (row) => '2021/06/27',
-    },
-]
-
-
 function App() {
 
-    const [data, setData] = useState()
+    const [devicesData, setDevicesData] = useState()
+    const [latestVersion, setLatestVersion] = useState()
     const [loading, setLoading] = useState(true)
     const [sortColumn, setSortColumn] = useState('user');
     const [sortDirection, setSortDirection] = useState('asc');
 
+
+    const columns = [
+        {
+            id: 'status',
+            render: (row) => (
+                <>
+                    {!row.last_update && <UpdateInProgressIcon/>}
+                    {latestVersion === row.version && <UpToDateIcon/>}
+                </>
+            ),
+            collapsing: true
+        },
+        {
+            id: 'user',
+            header: 'User',
+            render: (row) => (
+                <>
+                    {row.email}
+                    &nbsp;
+                    {!row.is_admin && <UnauthorizedUserIcon/>}
+                </>
+            ),
+        },
+        {
+            id: 'name',
+            header: 'Name',
+            render: (row) => (<>{row.device_name}</>),
+        },
+        {
+            id: 'version',
+            header: 'Firmware',
+            render: (row) => (<>{row.version}</>),
+        },
+        {
+            id: 'updated',
+            header: 'Last Updated',
+            render: (row) => (<>{isToday(row.last_update) ? "Today" : formatDate(row.last_update)}</>),
+        },
+    ]
+
     useEffect(() => {
         fetchToApi("/devices").then((data) => {
-            setData(data)
+            setDevicesData(data.deviceWithAllData);
+            setLatestVersion(data.lastFirmwareVersion);
         }).finally(() => {
                 setLoading(false)
             }
@@ -91,17 +97,24 @@ function App() {
         const direction = sortColumn === columnId && sortDirection === 'asc' ? 'desc' : 'asc';
         setSortColumn(columnId);
         setSortDirection(direction);
-        setData(data.slice().sort((a, b) => {
-            if (a[displayColumnToQueryColumn[columnId]] < b[displayColumnToQueryColumn[columnId]]) return direction === 'asc' ? -1 : 1;
-            if (a[displayColumnToQueryColumn[columnId]] > b[displayColumnToQueryColumn[columnId]]) return direction === 'asc' ? 1 : -1;
-            return 0;
-        }));
-        console.log(data)
+        let sortedData;
+        switch (columnId){
+            case "version":
+                sortedData = sortByFirmwareVersion(devicesData, columnId, direction);
+                break;
+            case "updated":
+                sortedData = sortByDate(devicesData, columnId, direction);
+                break;
+            default:
+                sortedData = sortByColumnId(devicesData, columnId, direction);
+                break;
+        }
+        setDevicesData(sortedData);
     };
 
     return (
         <DataTable
-            data={data}
+            data={devicesData}
             sortBy="user"
             columns={columns}
             sort={(columnId) => sortData(columnId)}
