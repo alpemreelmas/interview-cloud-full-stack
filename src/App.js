@@ -53,7 +53,7 @@ function App() {
             id: 'status',
             render: (row) => (
                 <>
-                    {!row.last_update && <UpdateInProgressIcon/>}
+                    {!row.last_update && latestVersion !== row.version ? <UpdateInProgressIcon/> : null}
                     {latestVersion === row.version && <UpToDateIcon/>}
                 </>
             ),
