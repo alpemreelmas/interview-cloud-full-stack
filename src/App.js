@@ -87,9 +87,9 @@ function App() {
         },
     ]
 
-    const fetchData = async (page = 1, pageSize = 10) => {
+    const fetchData = async () => {
         setLoading(true)
-        const response = await fetchToApi(`/devices?page=${page}&pageSize=${pageSize}`);
+        const response = await fetchToApi(`/devices?page=${current}&pageSize=${size}`);
         setDevicesData(response.data.deviceWithAllData);
         setLatestVersion(response.data.lastFirmwareVersion);
         setTotalPage(response.data.pagination.totalPages);
@@ -98,8 +98,7 @@ function App() {
 
     useEffect(() => {
         fetchData()
-
-    }, []);
+    }, [current,size]);
 
 
     if (loading) {
@@ -140,13 +139,11 @@ function App() {
                     total={totalPage}
                     size={size}
                     sizes={[10, 25, 50]}
-                    setCurrent={(current) => {
-                        setCurrent(current);
-                        fetchData(current, size)
+                    setCurrent={(newCurrent) => {
+                        setCurrent(newCurrent);
                     }}
-                    setSize={(size) => {
-                        setSize(size);
-                        fetchData(current, size)
+                    setSize={(newSize) => {
+                        setSize(newSize);
                     }}
                 />
             }
