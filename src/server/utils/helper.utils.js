@@ -3,13 +3,13 @@ export function successResponse(res, status= 200, data = null, message = "Operat
         is_error: false,
         data,
         message: message,
-    }).status(status);
+    },status)
 }
 
-export function errorResponse(res, status= 200, data = null, message = "Operation has been failed") {
+export function errorResponse(res, status= 400, data = null, message = "Operation has been failed") {
     res.send({
         is_error: true,
         data,
         message: message,
-    }).status(status);
+    },status)
 }

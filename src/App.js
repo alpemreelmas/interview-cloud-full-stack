@@ -46,6 +46,7 @@ function App() {
     const [current, setCurrent] = useState(1)
     const [sortColumn, setSortColumn] = useState('user');
     const [sortDirection, setSortDirection] = useState('desc');
+    const [error, setError] = useState(null);
 
 
     const columns = [
@@ -87,23 +88,45 @@ function App() {
         },
     ]
 
-    const fetchData = async () => {
+    const fetchDataBySortingBackend = async (columnId,direction) => {
+        setLoading(true)
+        setSortColumn(columnId);
+        setSortDirection(direction);
+        const response = await fetchToApi(`/devices-with-sorting?page=${current}&pageSize=${size}&sortColumn=${columnId}&sortDirection=${direction}`)
+        if(response.is_error){
+            setError("Error: "+response.data)
+        }else{
+            setDevicesData(response.data.deviceWithAllData);
+            setLatestVersion(response.data.lastFirmwareVersion);
+            setTotalPage(response.data.pagination.totalPage);
+        }
+        setLoading(false)
+    }
+
+    const fetchDataBySortingFrontend = async () => {
         setLoading(true)
         const response = await fetchToApi(`/devices?page=${current}&pageSize=${size}`);
         setDevicesData(response.data.deviceWithAllData);
         setLatestVersion(response.data.lastFirmwareVersion);
-        setTotalPage(response.data.pagination.totalPages);
+        setTotalPage(response.data.pagination.totalPage);
         setLoading(false)
     }
 
     useEffect(() => {
-        fetchData()
+        //fetchDataBySortingFrontend()
+        fetchDataBySortingBackend(sortColumn,sortDirection)
     }, [current,size]);
 
 
     if (loading) {
         return (
             <Loader active inline="centered"/>
+        )
+    }
+
+    if (error) {
+        return (
+            <div>{error}</div>
         )
     }
 
@@ -130,16 +153,8 @@ function App() {
     };
 
     const sortDataByBackendSortingAndPagination = (columnId) => {
-        setLoading(true)
         const direction = sortColumn === columnId && sortDirection === 'desc' ? 'asc' : 'desc';
-        setSortColumn(columnId);
-        setSortDirection(direction);
-        fetchToApi(`/devices-with-sorting?page=${current}&pageSize=${size}&sortColumn=${columnId}&sortDirection=${direction}`)
-            .then(response => {
-                setDevicesData(response.data.deviceWithAllData);
-                setLatestVersion(response.data.lastFirmwareVersion);
-                setTotalPage(response.data.pagination.totalPages);
-            }).finally(() => setLoading(false));
+        fetchDataBySortingBackend(columnId,direction)
     };
 
     return (

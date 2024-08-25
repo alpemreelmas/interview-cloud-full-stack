@@ -10,5 +10,7 @@ export function fetchToApi(url, method, body, headers) {
       ...headers
     },
     body: body ? JSON.stringify(body) : null
-  }).then((res) => res.json());
+  }).then((res) => res.json()).catch((error) => {
+    console.error('Error:', error.response);
+  })
 }
