@@ -9,7 +9,13 @@ import {DataTable} from './components/DataTable'
 import {Pagination} from './components/Pagination'
 /*import { gql, useQuery } from '@apollo/client';*/
 import {fetchToApi} from "./libs/fetch.js";
-import {formatDate, isToday, sortByColumnId, sortByDate, sortByFirmwareVersion} from "./libs/utils.js";
+import {
+    formatDate,
+    isToday,
+    sortByColumnId,
+    sortByDate,
+    sortByFirmwareVersion
+} from "./libs/utils.js";
 
 /*const data = [
   { iconExample: true }, {}, {}, {}, {}, {}, {}, {}, {}, {},
@@ -29,11 +35,15 @@ const UnauthorizedUserIcon = () => {
     const icon = <Icon name="warning sign" color="yellow"/>;
     return <Popup content="Not Authorized" trigger={icon}/>;
 }
+
 function App() {
 
     const [devicesData, setDevicesData] = useState()
     const [latestVersion, setLatestVersion] = useState()
     const [loading, setLoading] = useState(true)
+    const [size, setSize] = useState(10)
+    const [totalPage, setTotalPage] = useState(0)
+    const [current, setCurrent] = useState(1)
     const [sortColumn, setSortColumn] = useState('user');
     const [sortDirection, setSortDirection] = useState('asc');
 
@@ -77,15 +87,20 @@ function App() {
         },
     ]
 
+    const fetchData = async (page = 1, pageSize = 10) => {
+        setLoading(true)
+        const response = await fetchToApi(`/devices?page=${page}&pageSize=${pageSize}`);
+        setDevicesData(response.data.deviceWithAllData);
+        setLatestVersion(response.data.lastFirmwareVersion);
+        setTotalPage(response.data.pagination.totalPages);
+        setLoading(false)
+    }
+
     useEffect(() => {
-        fetchToApi("/devices").then((data) => {
-            setDevicesData(data.deviceWithAllData);
-            setLatestVersion(data.lastFirmwareVersion);
-        }).finally(() => {
-                setLoading(false)
-            }
-        )
+        fetchData()
+
     }, []);
+
 
     if (loading) {
         return (
@@ -98,7 +113,7 @@ function App() {
         setSortColumn(columnId);
         setSortDirection(direction);
         let sortedData;
-        switch (columnId){
+        switch (columnId) {
             case "version":
                 sortedData = sortByFirmwareVersion(devicesData, columnId, direction);
                 break;
@@ -121,12 +136,18 @@ function App() {
             header={<Header>Devices to Update</Header>}
             footer={
                 <Pagination
-                    current={1}
-                    total={2}
-                    size={10}
+                    current={current}
+                    total={totalPage}
+                    size={size}
                     sizes={[10, 25, 50]}
-                    setCurrent={(current) => console.log({current})}
-                    setSize={(size) => console.log({size})}
+                    setCurrent={(current) => {
+                        setCurrent(current);
+                        fetchData(current, size)
+                    }}
+                    setSize={(size) => {
+                        setSize(size);
+                        fetchData(current, size)
+                    }}
                 />
             }
         />
