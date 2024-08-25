@@ -107,7 +107,7 @@ function App() {
         )
     }
 
-    const sortData = (columnId) => {
+    const sortDataByFrontendSortingAndBackendPagination = (columnId) => {
         const direction = sortColumn === columnId && sortDirection === 'asc' ? 'desc' : 'asc';
         setSortColumn(columnId);
         setSortDirection(direction);
@@ -129,12 +129,25 @@ function App() {
         setDevicesData(sortedData);
     };
 
+    const sortDataByBackendSortingAndPagination = (columnId) => {
+        setLoading(true)
+        const direction = sortColumn === columnId && sortDirection === 'desc' ? 'asc' : 'desc';
+        setSortColumn(columnId);
+        setSortDirection(direction);
+        fetchToApi(`/devices-with-sorting?page=${current}&pageSize=${size}&sortColumn=${columnId}&sortDirection=${direction}`)
+            .then(response => {
+                setDevicesData(response.data.deviceWithAllData);
+                setLatestVersion(response.data.lastFirmwareVersion);
+                setTotalPage(response.data.pagination.totalPages);
+            }).finally(() => setLoading(false));
+    };
+
     return (
         <DataTable
             data={devicesData}
             sortBy="user"
             columns={columns}
-            sort={(columnId) => sortData(columnId)}
+            sort={(columnId) => sortDataByBackendSortingAndPagination(columnId)}
             header={<Header>Devices to Update</Header>}
             footer={
                 <Pagination

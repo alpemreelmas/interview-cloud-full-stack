@@ -1,4 +1,4 @@
-import {errorResponse} from "../utils.js";
+import {errorResponse} from "../utils/helper.utils.js";
 
 export default function registerExceptionHandler(app){
     app.use((req, res, next) => {

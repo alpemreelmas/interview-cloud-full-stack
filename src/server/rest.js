@@ -1,7 +1,10 @@
 import express from "express";
 import cors from 'cors'
-import {deviceHandler} from "./handlers/deviceHandlers.js";
-import registerExceptionHandler from "./handlers/registerExceptionHandler.js";
+import {
+    deviceHandlerWithPagination,
+    deviceHandlerWithSortingAndPagination
+} from "./controllers/deviceHandlers.js";
+import registerExceptionHandler from "./controllers/registerExceptionHandler.js";
 
 const port = 4000;
 
@@ -10,7 +13,8 @@ export const serveRest = async (data) => {
 
     app.use(cors())
 
-    app.get("/devices", deviceHandler);
+    app.get("/devices", deviceHandlerWithPagination);
+    app.get("/devices-with-sorting", deviceHandlerWithSortingAndPagination);
 
     registerExceptionHandler(app);
 
