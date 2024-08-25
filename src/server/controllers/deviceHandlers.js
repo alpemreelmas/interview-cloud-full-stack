@@ -29,12 +29,14 @@ export const deviceHandlerWithPagination = async (req, res) => {
                            ON d.id = upt.device_id
         WHERE u.subscription_ends >= current_timestamp LIMIT ?
         OFFSET ?`, [pageSize, offset])
+
     const lastFirmwareVersion = await connection.raw(`
         SELECT (firmware_versions.major || '.' || firmware_versions.minor || '.' ||
                 firmware_versions.patch) AS latest_version
         FROM firmware_versions
         ORDER BY id DESC LIMIT 1
     `)
+
     const totalDevicesCount = devicesWithAllData.length > 0 ? devicesWithAllData[0].total_count : 0;
     const totalPages = Math.ceil(totalDevicesCount / pageSize);
 
@@ -80,8 +82,7 @@ export const deviceHandlerWithSortingAndPagination = async (req, res) => {
             u.admin AS is_admin,
             u.email,
             (fv.major || '.' || fv.minor || '.' || fv.patch) AS version,
-            upt.last_update,
-            COUNT(*) OVER() AS total_count
+            upt.last_update
         FROM
             devices d
                 JOIN
