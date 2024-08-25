@@ -14,7 +14,7 @@ import {
     isToday,
     sortByColumnId,
     sortByDate,
-    sortByFirmwareVersion
+    sortByFirmwareVersion, sortByStatus
 } from "./libs/utils.js";
 
 /*const data = [
@@ -45,7 +45,7 @@ function App() {
     const [totalPage, setTotalPage] = useState(0)
     const [current, setCurrent] = useState(1)
     const [sortColumn, setSortColumn] = useState('user');
-    const [sortDirection, setSortDirection] = useState('asc');
+    const [sortDirection, setSortDirection] = useState('desc');
 
 
     const columns = [
@@ -118,6 +118,9 @@ function App() {
                 break;
             case "updated":
                 sortedData = sortByDate(devicesData, columnId, direction);
+                break;
+            case "status":
+                sortedData = sortByStatus(devicesData, latestVersion);
                 break;
             default:
                 sortedData = sortByColumnId(devicesData, columnId, direction);

@@ -23,7 +23,7 @@ export function sortByDate(data, columnId, direction) {
     return data.slice().sort((a, b) => {
         const dateA = new Date(a[displayColumnToQueryColumn[columnId]]);
         const dateB = new Date(b[displayColumnToQueryColumn[columnId]]);
-        return direction === 'asc' ? dateA - dateB : dateB - dateA;
+        return direction === 'desc' ? dateA - dateB : dateB - dateA;
     });
 }
 
@@ -45,4 +45,24 @@ export function sortByColumnId(data, columnId, direction) {
         return 0;
     });
 
+}
+
+export function sortByStatus(data, latestVersion) {
+    return data.slice().sort((a, b) => {
+        const aStatus = getStatus(a, latestVersion);
+        const bStatus = getStatus(b, latestVersion);
+
+        if (aStatus === bStatus) return 0;
+        if (aStatus === 'checkmark') return -1;
+        if (bStatus === 'checkmark') return 1;
+        if (aStatus === 'loading') return -1;
+        if (bStatus === 'loading') return 1;
+        return 0;
+    });
+}
+
+function getStatus(device, latestVersion) {
+    if (device.version === latestVersion) return 'checkmark';
+    if (!device.last_update) return 'loading';
+    return 'empty';
 }
